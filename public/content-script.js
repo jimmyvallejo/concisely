@@ -14,7 +14,7 @@ function scrapePageText() {
     links: Array.from(document.querySelectorAll('a')).map(link => ({
       text: link.textContent?.trim(),
       href: link.href
-    })).filter(link => link.text && link.text.length > 0), // Remove empty links
+    })).filter(link => link.text && link.text.length > 0), 
     metaDescription: document.querySelector('meta[name="description"]')?.getAttribute('content') || null,
     mainContent: document.querySelector('main')?.textContent?.trim() || null
   };
