@@ -1,7 +1,4 @@
-
-console.log("Content script loaded");
-
-function scrapePageText() {
+const scrapePageText =() => {
   return {
     title: document.title,
     headers: Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(header => ({
