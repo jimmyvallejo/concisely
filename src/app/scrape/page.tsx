@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { SecureKeyStorage } from "@/lib/encryption";
+import { APIDrawer } from "@/components/api-drawer";
+import { ApiKeys } from "@/types/common";
+
 interface ScrapedData {
   title: string;
   headers: Array<{ type: string; text: string }>;
@@ -13,6 +17,20 @@ const Scrape = () => {
   const [streamResponse, setStreamResponse] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [scrapedData, setScrapedData] = useState<ScrapedData | null>(null);
+  const [apiKeys, setApiKeys] = useState<ApiKeys>({
+    openai: null,
+    anthropic: null,
+  });
+
+  useEffect(() => {
+    const fetchApiKeys = async () => {
+      const openAiKey = await SecureKeyStorage.getApiKey("openai");
+      const anthropicKey = await SecureKeyStorage.getApiKey("anthropic");
+      setApiKeys({ openai: openAiKey, anthropic: anthropicKey });
+    };
+
+    fetchApiKeys();
+  }, []);
 
   const handleScrape = async (): Promise<void> => {
     try {
@@ -35,6 +53,7 @@ const Scrape = () => {
         if (response && response.success) {
           console.log("Data", response.data);
           setScrapedData(response.data);
+          handleStream(response.data);
         } else {
           console.error("Failed to scrape:", response?.error);
         }
@@ -91,19 +110,23 @@ const Scrape = () => {
   return (
     <div className="w-full flex items-center justify-center p-4">
       <div className="w-full max-w-2xl flex flex-col items-center">
-        <h1 className="text-2xl font-bold mb-4">Web Scraper</h1>
+        <h1 className="text-2xl font-bold mb-4">One Click Summary</h1>
 
-        <div className="flex gap-4">
-          <Button onClick={handleScrape} disabled={isLoading} className="w-48">
-            {isLoading ? "Scraping..." : "Scrape Page"}
-          </Button>
-
-          {scrapedData && (
-            <Button onClick={() => handleStream(scrapedData)} className="w-48">
-              Generate Analysis
+        {apiKeys.openai ? (
+          <div className="flex gap-4">
+            <Button
+              onClick={handleScrape}
+              disabled={isLoading}
+              className="w-48"
+            >
+              {isLoading ? "Summarizing..." : "Summarize Tab"}
             </Button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex gap-4">
+            <APIDrawer apiKeys={apiKeys}/>
+          </div>
+        )}
 
         {streamResponse.length > 0 && (
           <div className="mt-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
@@ -111,65 +134,6 @@ const Scrape = () => {
             <div className="prose dark:prose-invert max-w-none">
               {streamResponse.map((chunk, index) => (
                 <span key={index}>{chunk}</span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {scrapedData && (
-          <div className="mt-6 w-full space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-            <h2 className="text-xl font-bold border-b pb-2">
-              {scrapedData.title}
-            </h2>
-
-            {scrapedData.metaDescription && (
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Meta Description</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {scrapedData.metaDescription}
-                </p>
-              </div>
-            )}
-
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Headers</h3>
-              <ul className="space-y-1">
-                {scrapedData.headers.map((header, index) => (
-                  <li key={index} className="text-sm">
-                    <span className="font-medium">{header.type}:</span>{" "}
-                    {header.text}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Links</h3>
-              <ul className="space-y-1">
-                {scrapedData.links.map((link, index) => (
-                  <li key={index} className="text-sm">
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      {link.text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Paragraphs</h3>
-              {scrapedData.paragraphs.map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="text-sm text-gray-600 dark:text-gray-400 mt-2"
-                >
-                  {paragraph}
-                </p>
               ))}
             </div>
           </div>
