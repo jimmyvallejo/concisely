@@ -70,6 +70,7 @@
     height: 600px;
     margin: 0;
     padding: 0;
+    border: 1px solid white;
   }
 
   #root {
