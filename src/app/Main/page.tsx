@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { SecureKeyStorage } from "@/lib/encryption";
 import { APIDrawer } from "@/components/api-drawer";
-import { ApiKeys } from "@/types/common";
+import { useApiKeys } from "@/context/key-provider";
 
 interface ScrapedData {
   title: string;
@@ -13,24 +12,11 @@ interface ScrapedData {
   mainContent: string | null;
 }
 
-const Scrape = () => {
+const Main = () => {
+  const { apiKeys } = useApiKeys();
   const [streamResponse, setStreamResponse] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [scrapedData, setScrapedData] = useState<ScrapedData | null>(null);
-  const [apiKeys, setApiKeys] = useState<ApiKeys>({
-    openai: null,
-    anthropic: null,
-  });
-
-  useEffect(() => {
-    const fetchApiKeys = async () => {
-      const openAiKey = await SecureKeyStorage.getApiKey("openai");
-      const anthropicKey = await SecureKeyStorage.getApiKey("anthropic");
-      setApiKeys({ openai: openAiKey, anthropic: anthropicKey });
-    };
-
-    fetchApiKeys();
-  }, []);
 
   const handleScrape = async (): Promise<void> => {
     try {
@@ -124,7 +110,7 @@ const Scrape = () => {
           </div>
         ) : (
           <div className="flex gap-4">
-            <APIDrawer apiKeys={apiKeys}/>
+            <APIDrawer />
           </div>
         )}
 
@@ -143,4 +129,4 @@ const Scrape = () => {
   );
 };
 
-export default Scrape;
+export default Main;

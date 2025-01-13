@@ -1,20 +1,17 @@
 import { ThemeProvider } from "./components/theme-provider";
-import { ModeToggle } from "./components/mode-toggle";
-import Scrape from "./app/scrape/page";
+import { ApiKeysProvider } from "./context/key-provider";
+import Main from "./app/Main/page";
+import { Nav } from "./components/top-nav";
 
 function App() {
   return (
     <>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <div className="flex flex-row justify-center items-center w-full">
-  
-          <h1>CONCISELY</h1>
-          <div className="ml-3">
-            <ModeToggle />
-          </div>
-        </div>
-          <Scrape />
-      </ThemeProvider>
+      <ApiKeysProvider>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <Nav />
+          <Main />
+        </ThemeProvider>
+      </ApiKeysProvider>
     </>
   );
 }
