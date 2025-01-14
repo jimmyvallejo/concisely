@@ -1,12 +1,26 @@
 
+import { ApiProvider } from "../types/common";
+
+
 interface EncryptionResult {
     encryptedData: number[];
     key: number[];
   }
   
-
-  type ApiProvider = 'openai' | 'anthropic';
+  // Example usage:
+  /*
+  // Save an API key
+  await SecureKeyStorage.saveApiKey('openai', 'sk-123456789');
+  await SecureKeyStorage.saveApiKey('anthropic', 'sk-ant-123456789');
   
+  // Retrieve an API key
+  const openAiKey = await SecureKeyStorage.getApiKey('openai');
+  const anthropicKey = await SecureKeyStorage.getApiKey('anthropic');
+  
+  // Remove an API key
+  await SecureKeyStorage.removeApiKey('openai');
+  */
+
   export class SecureKeyStorage {
 
     static async encryptKey(apiKey: string): Promise<EncryptionResult> {
@@ -127,16 +141,3 @@ interface EncryptionResult {
   }
   
 
-  // Example usage:
-  /*
-  // Save an API key
-  await SecureKeyStorage.saveApiKey('openai', 'sk-123456789');
-  await SecureKeyStorage.saveApiKey('anthropic', 'sk-ant-123456789');
-  
-  // Retrieve an API key
-  const openAiKey = await SecureKeyStorage.getApiKey('openai');
-  const anthropicKey = await SecureKeyStorage.getApiKey('anthropic');
-  
-  // Remove an API key
-  await SecureKeyStorage.removeApiKey('openai');
-  */

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { InputWithButton } from "./input-w-button";
+import { API_PROVIDER } from "@/lib/constants/constants";
 
 interface APIDrawerProps {
   isNav?: boolean;
@@ -42,7 +43,7 @@ export const APIDrawer = ({ isNav = false }: APIDrawerProps) => {
         </div>
         <div className="flex items-center justify-center">
           <DrawerFooter>
-            <InputWithButton type="gpt" />
+            <InputWithButton type={API_PROVIDER.OpenAI} />
             {/* <InputWithButton type="claude" /> */}
             <DrawerClose asChild>
               <div className="flex items-center justify-center mt-3">

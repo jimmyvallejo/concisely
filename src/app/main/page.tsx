@@ -17,7 +17,6 @@ const Main = () => {
   const { apiKeys } = useApiKeys();
   const [streamResponse, setStreamResponse] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [scrapedData, setScrapedData] = useState<ScrapedData | null>(null);
 
   const handleScrape = async (): Promise<void> => {
     try {
@@ -39,7 +38,6 @@ const Main = () => {
       chrome.tabs.sendMessage(tab.id, { action: "scrapeText" }, (response) => {
         if (response && response.success) {
           console.log("Data", response.data);
-          setScrapedData(response.data);
           handleStream(response.data);
         } else {
           console.error("Failed to scrape:", response?.error);
@@ -53,8 +51,6 @@ const Main = () => {
   };
 
   const handleStream = async (data: ScrapedData): Promise<void> => {
-    console.log("Scraped:", scrapedData);
-    console.log("Incomimg:", data);
     try {
       setStreamResponse([]);
 
@@ -100,7 +96,7 @@ const Main = () => {
         <h1 className="text-2xl font-bold mb-4">One Click Summary</h1>
 
         {apiKeys.openai ? (
-          <div className="flex gap-4 flex-col">
+          <div className="flex gap-2 flex-col">
             <Button
               onClick={handleScrape}
               disabled={isLoading}

@@ -1,13 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ApiType } from "@/types/common";
+import { ApiProvider } from "@/lib/types/common";
 import { useEffect, useState } from "react";
-import { SecureKeyStorage } from "@/lib/encryption";
+import { SecureKeyStorage } from "@/lib/utils/encryption";
 import { useApiKeys } from "@/context/key-provider";
+import { validateOpenAI } from "@/lib/api/validate-keys";
+import { API_PROVIDER,} from "@/lib/constants/constants";
 
 interface InputWithButtonProps {
-  type: ApiType;
+  type: ApiProvider;
 }
 
 export const InputWithButton = ({ type }: InputWithButtonProps) => {
@@ -18,16 +20,16 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
 
   useEffect(() => {
     if (apiKeys) {
-      if (type === "gpt" && apiKeys.openai) {
+      if (type === API_PROVIDER.OpenAI && apiKeys.openai) {
         setOpenAiKey(apiKeys.openai);
-      } else if (type === "claude" && apiKeys.anthropic) {
+      } else if (type === API_PROVIDER.Anthropic && apiKeys.anthropic) {
         setAnthropicKey(apiKeys.anthropic);
       }
     }
   }, [apiKeys, type]);
 
   const getButtonText = () => {
-    if (type === "gpt") {
+    if (type === API_PROVIDER.OpenAI) {
       return apiKeys?.openai ? "Remove" : "Add";
     }
     return apiKeys?.anthropic ? "Remove" : "Add";
@@ -35,7 +37,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
 
   const handleInputChange = (value: string) => {
     setError("");
-    if (type === "gpt") {
+    if (type === API_PROVIDER.OpenAI) {
       setOpenAiKey(value);
     } else {
       setAnthropicKey(value);
@@ -44,25 +46,14 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
 
   const handleSetKey = async () => {
     try {
-      if (type === "gpt") {
+      if (type === API_PROVIDER.OpenAI) {
         if (getButtonText() === "Remove") {
-          await SecureKeyStorage.removeApiKey("openai");
+          await SecureKeyStorage.removeApiKey(API_PROVIDER.OpenAI);
           setOpenAiKey("");
         } else if (openAiKey) {
-          const data = {
-            apiKey: openAiKey,
-          };
-
-          const response = await fetch("http://localhost:8080/gpt-validate", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-          console.log(response);
-          if (response.status === 200) {
-            await SecureKeyStorage.saveApiKey("openai", openAiKey);
+          const validated = await validateOpenAI(openAiKey);
+          if (validated) {
+            await SecureKeyStorage.saveApiKey(API_PROVIDER.OpenAI, openAiKey);
           } else {
             setError("Invalid API key");
             return;
@@ -70,10 +61,10 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         }
       } else {
         if (getButtonText() === "Remove") {
-          await SecureKeyStorage.removeApiKey("anthropic");
+          await SecureKeyStorage.removeApiKey(API_PROVIDER.Anthropic);
           setAnthropicKey("");
         } else if (anthropicKey) {
-          await SecureKeyStorage.saveApiKey("anthropic", anthropicKey);
+          await SecureKeyStorage.saveApiKey(API_PROVIDER.OpenAI, anthropicKey);
         }
       }
       await fetchApiKeys();
@@ -88,22 +79,30 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         <div className="flex items-center min-w-[120px]">
           <img
             src={`${type}.png`}
-            alt={`${type === "gpt" ? "GPT" : "Claude"} Logo`}
+            alt={`${type === API_PROVIDER.OpenAI ? "GPT" : "Claude"} Logo`}
             className="h-6 w-6 mr-2"
           />
           <Label htmlFor="key" className="whitespace-nowrap">
-            {type === "gpt" ? "OpenAI" : "Anthropic"}
+            {type === API_PROVIDER.OpenAI ? "OpenAI" : "Anthropic"}
           </Label>
         </div>
         <div className="flex-1">
           <Input
             id="key"
             type="password"
-            placeholder={type === "gpt" ? "sk-1234" : "sk-ant-"}
+            placeholder={type === API_PROVIDER.OpenAI ? "sk-1234" : "sk-ant-"}
             className="w-full"
-            value={type === "gpt" ? openAiKey || "" : anthropicKey || ""}
+            value={
+              type === API_PROVIDER.OpenAI
+                ? openAiKey || ""
+                : anthropicKey || ""
+            }
             onChange={(e) => handleInputChange(e.target.value)}
-            disabled={type === "gpt" ? !!apiKeys?.openai : !!apiKeys?.anthropic}
+            disabled={
+              type === API_PROVIDER.OpenAI
+                ? !!apiKeys?.openai
+                : !!apiKeys?.anthropic
+            }
           />
           {error && (
             <p className="text-sm text-red-500 mt-1">Invalid API key</p>

@@ -1,6 +1,12 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { ApiKeys } from "@/types/common";
-import { SecureKeyStorage } from "@/lib/encryption";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { ApiKeys } from "@/lib/types/common";
+import { SecureKeyStorage } from "@/lib/utils/encryption";
 
 interface ApiKeysContextType {
   apiKeys: ApiKeys;
