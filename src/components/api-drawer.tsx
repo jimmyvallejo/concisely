@@ -33,7 +33,7 @@ export const APIDrawer = ({ isNav = false }: APIDrawerProps) => {
         <div className="flex items-center justify-center">
           <DrawerHeader>
             <div className="flex flex-col justify-center items-center space-y-3">
-              <DrawerTitle>Edit/Add API Keys</DrawerTitle>
+              <DrawerTitle>Add/Remove API Keys</DrawerTitle>
               <DrawerDescription>
                 API keys are securely stored with encryption in chrome storage.
               </DrawerDescription>
@@ -43,7 +43,7 @@ export const APIDrawer = ({ isNav = false }: APIDrawerProps) => {
         <div className="flex items-center justify-center">
           <DrawerFooter>
             <InputWithButton type="gpt" />
-            <InputWithButton type="claude" />
+            {/* <InputWithButton type="claude" /> */}
             <DrawerClose asChild>
               <div className="flex items-center justify-center mt-3">
                 <Button variant="outline">Cancel</Button>

@@ -14,6 +14,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
   const [openAiKey, setOpenAiKey] = useState<string>("");
   const [anthropicKey, setAnthropicKey] = useState<string>("");
   const { apiKeys, fetchApiKeys } = useApiKeys();
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     if (apiKeys) {
@@ -33,6 +34,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
   };
 
   const handleInputChange = (value: string) => {
+    setError("");
     if (type === "gpt") {
       setOpenAiKey(value);
     } else {
@@ -47,7 +49,24 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
           await SecureKeyStorage.removeApiKey("openai");
           setOpenAiKey("");
         } else if (openAiKey) {
-          await SecureKeyStorage.saveApiKey("openai", openAiKey);
+          const data = {
+            apiKey: openAiKey,
+          };
+
+          const response = await fetch("http://localhost:8080/gpt-validate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+          console.log(response);
+          if (response.status === 200) {
+            await SecureKeyStorage.saveApiKey("openai", openAiKey);
+          } else {
+            setError("Invalid API key");
+            return;
+          }
         }
       } else {
         if (getButtonText() === "Remove") {
@@ -64,28 +83,36 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
   };
 
   return (
-    <div className="flex w-full max-w-sm items-center space-x-2">
-      <div className="flex items-center min-w-[120px]">
-        <img
-          src={`${type}.png`}
-          alt={`${type === "gpt" ? "GPT" : "Claude"} Logo`}
-          className="h-6 w-6 mr-2"
-        />
-        <Label htmlFor="key" className="whitespace-nowrap">
-          {type === "gpt" ? "OpenAI" : "Anthropic"}
-        </Label>
+    <div className="space-y-2">
+      <div className="flex w-full max-w-sm items-start space-x-2">
+        <div className="flex items-center min-w-[120px]">
+          <img
+            src={`${type}.png`}
+            alt={`${type === "gpt" ? "GPT" : "Claude"} Logo`}
+            className="h-6 w-6 mr-2"
+          />
+          <Label htmlFor="key" className="whitespace-nowrap">
+            {type === "gpt" ? "OpenAI" : "Anthropic"}
+          </Label>
+        </div>
+        <div className="flex-1">
+          <Input
+            id="key"
+            type="password"
+            placeholder={type === "gpt" ? "sk-1234" : "sk-ant-"}
+            className="w-full"
+            value={type === "gpt" ? openAiKey || "" : anthropicKey || ""}
+            onChange={(e) => handleInputChange(e.target.value)}
+            disabled={type === "gpt" ? !!apiKeys?.openai : !!apiKeys?.anthropic}
+          />
+          {error && (
+            <p className="text-sm text-red-500 mt-1">Invalid API key</p>
+          )}
+        </div>
+        <Button variant="outline" onClick={handleSetKey} type="button">
+          {getButtonText()}
+        </Button>
       </div>
-      <Input
-        id="key"
-        type="password"
-        placeholder={type === "gpt" ? "sk-1234" : "sk-ant-"}
-        className="flex-1"
-        value={type === "gpt" ? openAiKey || "" : anthropicKey || ""}
-        onChange={(e) => handleInputChange(e.target.value)}
-      />
-      <Button variant="outline" onClick={handleSetKey} type="button">
-        {getButtonText()}
-      </Button>
     </div>
   );
 };

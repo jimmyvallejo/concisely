@@ -4,3 +4,8 @@ export type ApiKeys = {
   };
 
 export type ApiType = "gpt" | "claude";
+
+export enum ChatModels {
+  Mini = "gpt-4-mini",     
+  Sonnet = "claude-3-sonnet"  
+}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { APIDrawer } from "@/components/api-drawer";
+import { ProviderDropdown } from "@/components/provider-dropdown";
 import { useApiKeys } from "@/context/key-provider";
 
 interface ScrapedData {
@@ -99,7 +100,7 @@ const Main = () => {
         <h1 className="text-2xl font-bold mb-4">One Click Summary</h1>
 
         {apiKeys.openai ? (
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-col">
             <Button
               onClick={handleScrape}
               disabled={isLoading}
@@ -107,6 +108,7 @@ const Main = () => {
             >
               {isLoading ? "Summarizing..." : "Summarize Tab"}
             </Button>
+            <ProviderDropdown />
           </div>
         ) : (
           <div className="flex gap-4">
@@ -116,7 +118,7 @@ const Main = () => {
 
         {streamResponse.length > 0 && (
           <div className="mt-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-            <h2 className="text-xl font-bold mb-4">AI Analysis</h2>
+            <h2 className="text-xl font-bold mb-4">AI Summary</h2>
             <div className="prose dark:prose-invert max-w-none">
               {streamResponse.map((chunk, index) => (
                 <span key={index}>{chunk}</span>
