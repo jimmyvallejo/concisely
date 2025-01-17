@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { APIDrawer } from "@/components/api-drawer";
 import { ProviderDropdown } from "@/components/provider-dropdown";
 import { useApiKeys } from "@/context/key-provider";
+import { useModel } from "@/context/model-provider";
+import { API_PROVIDER } from "@/lib/constants/constants";
 
 interface ScrapedData {
   title: string;
@@ -11,10 +13,12 @@ interface ScrapedData {
   links: Array<{ text: string; href: string }>;
   metaDescription: string | null;
   mainContent: string | null;
+  ApiKey: string | null;
 }
 
 const Main = () => {
   const { apiKeys } = useApiKeys();
+  const { currentModel } = useModel();
   const [streamResponse, setStreamResponse] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,6 +57,12 @@ const Main = () => {
   const handleStream = async (data: ScrapedData): Promise<void> => {
     try {
       setStreamResponse([]);
+
+      if (apiKeys.openai && currentModel?.provider === API_PROVIDER.OpenAI) {
+        data.ApiKey = apiKeys.openai;
+      } else {
+        throw new Error("Invalid API key")
+      }
 
       const response = await fetch("http://localhost:8080/gpt-stream", {
         method: "POST",
