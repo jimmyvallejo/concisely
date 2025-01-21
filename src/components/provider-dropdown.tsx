@@ -38,9 +38,18 @@ export const ProviderDropdown = () => {
           onValueChange={handleModelChange}
         >
           {apiKeys.openai && (
-            <DropdownMenuRadioItem value={CHAT_MODELS.Mini.id}>
-              {CHAT_MODELS.Mini.displayName}
+            <div>
+            <DropdownMenuRadioItem value={CHAT_MODELS.GptMini.id}>
+              {CHAT_MODELS.GptMini.displayName}
             </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value={CHAT_MODELS.GptStandard.id}>
+              {CHAT_MODELS.GptStandard.displayName}
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value={CHAT_MODELS.GptOld.id}>
+              {CHAT_MODELS.GptOld.displayName}
+            </DropdownMenuRadioItem>
+            </div>
+            
           )}
           {apiKeys.anthropic && (
             <DropdownMenuRadioItem value={CHAT_MODELS.Sonnet.id}>

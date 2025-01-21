@@ -4,9 +4,19 @@ export const API_PROVIDER = {
   } as const;
 
   export const CHAT_MODELS = {
-    Mini: {
+    GptMini: {
       id: "gpt-4o-mini",
+      displayName: "GPT-4o-Mini",
+      provider: API_PROVIDER.OpenAI
+    },
+    GptStandard: {
+      id: "gpt-4o-standard",
       displayName: "GPT-4o",
+      provider: API_PROVIDER.OpenAI
+    },
+    GptOld: {
+      id: "gpt-4-old",
+      displayName: "GPT-4",
       provider: API_PROVIDER.OpenAI
     },
     Sonnet: {

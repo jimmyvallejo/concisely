@@ -13,7 +13,8 @@ interface ScrapedData {
   links: Array<{ text: string; href: string }>;
   metaDescription: string | null;
   mainContent: string | null;
-  ApiKey: string | null;
+  apiKey: string | null;
+  model: string | null;
 }
 
 const Main = () => {
@@ -59,9 +60,10 @@ const Main = () => {
       setStreamResponse([]);
 
       if (apiKeys.openai && currentModel?.provider === API_PROVIDER.OpenAI) {
-        data.ApiKey = apiKeys.openai;
+        data.apiKey = apiKeys.openai;
+        data.model = currentModel.id;
       } else {
-        throw new Error("Invalid API key")
+        throw new Error("Invalid API key");
       }
 
       const response = await fetch("http://localhost:8080/gpt-stream", {

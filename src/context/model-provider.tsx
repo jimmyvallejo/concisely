@@ -26,7 +26,7 @@ export const ModelProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (apiKeys && apiKeys.openai) {
-      setCurrentModel(CHAT_MODELS.Mini);
+      setCurrentModel(CHAT_MODELS.GptMini);
     }
   }, [apiKeys]);
 
