@@ -5,8 +5,9 @@ import { ApiProvider } from "@/lib/types/common";
 import { useEffect, useState } from "react";
 import { SecureKeyStorage } from "@/lib/utils/encryption";
 import { useApiKeys } from "@/context/key-provider";
-import { validateOpenAI } from "@/lib/api/validate-keys";
-import { API_PROVIDER,} from "@/lib/constants/constants";
+import { useModel } from "@/context/model-provider";
+import { validateOpenAI, validateAnthropicKey } from "@/lib/api/validate-keys";
+import { API_PROVIDER } from "@/lib/constants/constants";
 
 interface InputWithButtonProps {
   type: ApiProvider;
@@ -16,6 +17,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
   const [openAiKey, setOpenAiKey] = useState<string>("");
   const [anthropicKey, setAnthropicKey] = useState<string>("");
   const { apiKeys, fetchApiKeys } = useApiKeys();
+  const { handleInitialAndRemoval } = useModel();
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -49,6 +51,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
       if (type === API_PROVIDER.OpenAI) {
         if (getButtonText() === "Remove") {
           await SecureKeyStorage.removeApiKey(API_PROVIDER.OpenAI);
+          handleInitialAndRemoval()
           setOpenAiKey("");
         } else if (openAiKey) {
           const validated = await validateOpenAI(openAiKey);
@@ -62,12 +65,20 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
       } else {
         if (getButtonText() === "Remove") {
           await SecureKeyStorage.removeApiKey(API_PROVIDER.Anthropic);
+          handleInitialAndRemoval()
           setAnthropicKey("");
         } else if (anthropicKey) {
-          await SecureKeyStorage.saveApiKey(API_PROVIDER.OpenAI, anthropicKey);
+          const validated = await validateAnthropicKey(anthropicKey);
+          if (validated) {
+            await SecureKeyStorage.saveApiKey(
+              API_PROVIDER.Anthropic,
+              anthropicKey
+            );
+          }
         }
       }
       await fetchApiKeys();
+      console.log(apiKeys);
     } catch (error) {
       console.error("Error managing API key:", error);
     }

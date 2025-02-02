@@ -4,7 +4,7 @@ export type ApiKeys = {
   };
 
 
-export type ApiProvider = 'openai' | 'anthropic';
+export type ApiProvider = 'openai' | 'anthropic' | 'deepseek';
 
 export type ChatModelConfig = {
   id: string;

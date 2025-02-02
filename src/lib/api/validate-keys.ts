@@ -1,6 +1,8 @@
+import { BASE_URL } from "../constants/constants";
+
 export const validateOpenAI = async (key: string): Promise<boolean> => {
     try {
-      const response = await fetch("http://localhost:8080/gpt-validate", {
+      const response = await fetch(`${BASE_URL}/gpt-validate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -13,3 +15,20 @@ export const validateOpenAI = async (key: string): Promise<boolean> => {
       return false;
     }
   };
+
+
+  export const validateAnthropicKey = async (key: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${BASE_URL}/anthropic-validate`, {
+        method: "POST",
+        headers : {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({apiKey: key}),
+      })
+      return response.status === 200
+    } catch (error) {
+      console.error("Error validating Anthropic key:", error);
+      return false;
+    }
+  }

@@ -22,6 +22,7 @@ export const ProviderDropdown = () => {
     );
     if (selectedModel) {
       setCurrentModel(selectedModel);
+      console.log(selectedModel)
     }
   };
 
@@ -31,30 +32,38 @@ export const ProviderDropdown = () => {
         <Button variant="outline">{currentModel?.displayName}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>Available Models:</DropdownMenuLabel>
-        <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
           value={currentModel?.id}
           onValueChange={handleModelChange}
         >
           {apiKeys.openai && (
-            <div>
-            <DropdownMenuRadioItem value={CHAT_MODELS.GptMini.id}>
-              {CHAT_MODELS.GptMini.displayName}
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value={CHAT_MODELS.GptStandard.id}>
-              {CHAT_MODELS.GptStandard.displayName}
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value={CHAT_MODELS.GptOld.id}>
-              {CHAT_MODELS.GptOld.displayName}
-            </DropdownMenuRadioItem>
-            </div>
-            
+            <>
+              <DropdownMenuLabel>OpenAI Models:</DropdownMenuLabel>
+              <DropdownMenuRadioItem value={CHAT_MODELS.GptMini.id}>
+                {CHAT_MODELS.GptMini.displayName}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value={CHAT_MODELS.GptStandard.id}>
+                {CHAT_MODELS.GptStandard.displayName}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value={CHAT_MODELS.GptOld.id}>
+                {CHAT_MODELS.GptOld.displayName}
+              </DropdownMenuRadioItem>
+              {apiKeys.anthropic && <DropdownMenuSeparator />}
+            </>
           )}
           {apiKeys.anthropic && (
-            <DropdownMenuRadioItem value={CHAT_MODELS.Sonnet.id}>
-              {CHAT_MODELS.Sonnet.displayName}
-            </DropdownMenuRadioItem>
+            <>
+              <DropdownMenuLabel>Anthropic Models:</DropdownMenuLabel>
+              <DropdownMenuRadioItem value={CHAT_MODELS.Sonnet.id}>
+                {CHAT_MODELS.Sonnet.displayName}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value={CHAT_MODELS.Opus.id}>
+                {CHAT_MODELS.Opus.displayName}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value={CHAT_MODELS.Haiku.id}>
+                {CHAT_MODELS.Haiku.displayName}
+              </DropdownMenuRadioItem>
+            </>
           )}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

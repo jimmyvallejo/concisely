@@ -14,6 +14,7 @@ import { ChatModelConfig } from "@/lib/types/common";
 interface ModelContextType {
   currentModel: ChatModelConfig | undefined;
   setCurrentModel: Dispatch<SetStateAction<ChatModelConfig | undefined>>;
+  handleInitialAndRemoval: () => void;
 }
 
 const ModelContext = createContext<ModelContextType | undefined>(undefined);
@@ -24,10 +25,19 @@ export const ModelProvider = ({ children }: { children: ReactNode }) => {
     undefined
   );
 
-  useEffect(() => {
+  const handleInitialAndRemoval = () => {
     if (apiKeys && apiKeys.openai) {
       setCurrentModel(CHAT_MODELS.GptMini);
+      return;
+    } else if (apiKeys && apiKeys.anthropic) {
+      setCurrentModel(CHAT_MODELS.Sonnet);
+    } else {
+      setCurrentModel(undefined);
     }
+  };
+
+  useEffect(() => {
+    handleInitialAndRemoval();
   }, [apiKeys]);
 
   useEffect(() => {
@@ -35,7 +45,9 @@ export const ModelProvider = ({ children }: { children: ReactNode }) => {
   }, [currentModel]);
 
   return (
-    <ModelContext.Provider value={{ currentModel, setCurrentModel }}>
+    <ModelContext.Provider
+      value={{ currentModel, setCurrentModel, handleInitialAndRemoval }}
+    >
       {children}
     </ModelContext.Provider>
   );

@@ -44,7 +44,7 @@ export const APIDrawer = ({ isNav = false }: APIDrawerProps) => {
         <div className="flex items-center justify-center">
           <DrawerFooter>
             <InputWithButton type={API_PROVIDER.OpenAI} />
-            {/* <InputWithButton type="claude" /> */}
+            <InputWithButton type={API_PROVIDER.Anthropic} />
             <DrawerClose asChild>
               <div className="flex items-center justify-center mt-3">
                 <Button variant="outline">Cancel</Button>

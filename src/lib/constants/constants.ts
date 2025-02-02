@@ -1,3 +1,6 @@
+export const BASE_URL = "http://localhost:8080"
+
+
 export const API_PROVIDER = {
     OpenAI: 'openai',
     Anthropic: 'anthropic'
@@ -21,8 +24,17 @@ export const API_PROVIDER = {
     },
     Sonnet: {
       id: "claude-3.5-sonnet",
-      displayName: "Claude 3.5 Sonnet",
+      displayName: "Claude 3.5 Sonnet", 
+      provider: API_PROVIDER.Anthropic
+    },
+    Opus: {
+      id: "claude-3-opus",
+      displayName: "Claude 3 Opus",
+      provider: API_PROVIDER.Anthropic
+    },
+    Haiku: {
+      id: "claude-3-haiku",
+      displayName: "Claude 3 Haiku",
       provider: API_PROVIDER.Anthropic
     }
   } as const;
-
