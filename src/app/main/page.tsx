@@ -6,6 +6,7 @@ import { useApiKeys } from "@/context/key-provider";
 import { useModel } from "@/context/model-provider";
 import { API_PROVIDER, BASE_URL } from "@/lib/constants/constants";
 import ReactMarkdown from "react-markdown";
+import { CircleX } from "lucide-react";
 
 interface ScrapedData {
   title: string;
@@ -154,12 +155,35 @@ const Main = () => {
             <APIDrawer />
           </div>
         )}
-
         {streamResponse.length > 0 && (
           <div className="mt-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 overflow-auto">
-            <h2 className="text-xl font-bold mb-4">AI Summary</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">AI Summary</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setStreamResponse([])}
+              >
+                <CircleX />
+              </Button>
+            </div>
             <div className="prose prose-sm lg:prose-base dark:prose-invert max-w-none">
               <ReactMarkdown>{streamResponse.join("")}</ReactMarkdown>
+            </div>
+            <div
+              className={`
+        flex justify-center mt-4 
+        transition-opacity duration-1000 ease-in-out
+        ${streamResponse.length > 100 ? "opacity-100" : "opacity-0"}
+      `}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              >
+                Scroll to Top
+              </Button>
             </div>
           </div>
         )}

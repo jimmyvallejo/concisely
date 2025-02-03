@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { SecureKeyStorage } from "@/lib/utils/encryption";
 import { useApiKeys } from "@/context/key-provider";
 import { useModel } from "@/context/model-provider";
-import { validateOpenAI, validateAnthropicKey } from "@/lib/api/validate-keys";
+import { validateOpenAI, validateAnthropicKey, validateDeepseekKey } from "@/lib/api/validate-keys";
 import { API_PROVIDER } from "@/lib/constants/constants";
 
 interface InputWithButtonProps {
@@ -16,6 +16,7 @@ interface InputWithButtonProps {
 export const InputWithButton = ({ type }: InputWithButtonProps) => {
   const [openAiKey, setOpenAiKey] = useState<string>("");
   const [anthropicKey, setAnthropicKey] = useState<string>("");
+  const [deepseekKey, setDeepseekKey] = useState<string>("");
   const { apiKeys, fetchApiKeys } = useApiKeys();
   const { handleInitialAndRemoval } = useModel();
   const [error, setError] = useState<string>("");
@@ -26,61 +27,134 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         setOpenAiKey(apiKeys.openai);
       } else if (type === API_PROVIDER.Anthropic && apiKeys.anthropic) {
         setAnthropicKey(apiKeys.anthropic);
+      } else if (type === API_PROVIDER.DeepSeek && apiKeys.deepseek) {
+        setDeepseekKey(apiKeys.deepseek);
       }
     }
   }, [apiKeys, type]);
 
   const getButtonText = () => {
-    if (type === API_PROVIDER.OpenAI) {
-      return apiKeys?.openai ? "Remove" : "Add";
+    switch (type) {
+      case API_PROVIDER.OpenAI:
+        return apiKeys?.openai ? "Remove" : "Add";
+      case API_PROVIDER.Anthropic:
+        return apiKeys?.anthropic ? "Remove" : "Add";
+      case API_PROVIDER.DeepSeek:
+        return apiKeys?.deepseek ? "Remove" : "Add";
+      default:
+        return "Add";
     }
-    return apiKeys?.anthropic ? "Remove" : "Add";
   };
 
   const handleInputChange = (value: string) => {
     setError("");
-    if (type === API_PROVIDER.OpenAI) {
-      setOpenAiKey(value);
-    } else {
-      setAnthropicKey(value);
+    switch (type) {
+      case API_PROVIDER.OpenAI:
+        setOpenAiKey(value);
+        break;
+      case API_PROVIDER.Anthropic:
+        setAnthropicKey(value);
+        break;
+      case API_PROVIDER.DeepSeek:
+        setDeepseekKey(value);
+        break;
     }
   };
 
   const handleSetKey = async () => {
     try {
-      if (type === API_PROVIDER.OpenAI) {
-        if (getButtonText() === "Remove") {
-          await SecureKeyStorage.removeApiKey(API_PROVIDER.OpenAI);
-          handleInitialAndRemoval()
-          setOpenAiKey("");
-        } else if (openAiKey) {
-          const validated = await validateOpenAI(openAiKey);
-          if (validated) {
-            await SecureKeyStorage.saveApiKey(API_PROVIDER.OpenAI, openAiKey);
-          } else {
-            setError("Invalid API key");
-            return;
-          }
+      const isRemove = getButtonText() === "Remove";
+
+      if (isRemove) {
+        await SecureKeyStorage.removeApiKey(type);
+        handleInitialAndRemoval();
+        switch (type) {
+          case API_PROVIDER.OpenAI:
+            setOpenAiKey("");
+            break;
+          case API_PROVIDER.Anthropic:
+            setAnthropicKey("");
+            break;
+          case API_PROVIDER.DeepSeek:
+            setDeepseekKey("");
+            break;
         }
       } else {
-        if (getButtonText() === "Remove") {
-          await SecureKeyStorage.removeApiKey(API_PROVIDER.Anthropic);
-          handleInitialAndRemoval()
-          setAnthropicKey("");
-        } else if (anthropicKey) {
-          const validated = await validateAnthropicKey(anthropicKey);
-          if (validated) {
-            await SecureKeyStorage.saveApiKey(
-              API_PROVIDER.Anthropic,
-              anthropicKey
-            );
-          }
+        let key = "";
+        let isValid = false;
+
+        switch (type) {
+          case API_PROVIDER.OpenAI:
+            key = openAiKey;
+            isValid = await validateOpenAI(key);
+            break;
+          case API_PROVIDER.Anthropic:
+            key = anthropicKey;
+            isValid = await validateAnthropicKey(key);
+            break;
+          case API_PROVIDER.DeepSeek:
+            key = deepseekKey;
+            isValid = await validateDeepseekKey(key);
+            break;
+        }
+
+        if (!key) return;
+
+        if (isValid) {
+          await SecureKeyStorage.saveApiKey(type, key);
+        } else {
+          setError("Invalid API key");
+          return;
         }
       }
+
       await fetchApiKeys();
-      console.log(apiKeys);
     } catch (error) {
       console.error("Error managing API key:", error);
+    }
+  };
+
+  const getCurrentValue = () => {
+    switch (type) {
+      case API_PROVIDER.OpenAI:
+        return openAiKey || "";
+      case API_PROVIDER.Anthropic:
+        return anthropicKey || "";
+      case API_PROVIDER.DeepSeek:
+        return deepseekKey || "";
+    }
+  };
+
+  const isDisabled = () => {
+    switch (type) {
+      case API_PROVIDER.OpenAI:
+        return !!apiKeys?.openai;
+      case API_PROVIDER.Anthropic:
+        return !!apiKeys?.anthropic;
+      case API_PROVIDER.DeepSeek:
+        return !!apiKeys?.deepseek;
+    }
+  };
+
+  const getPlaceholder = () => {
+    switch (type) {
+      case API_PROVIDER.OpenAI:
+        return "sk-1234";
+      case API_PROVIDER.Anthropic:
+        return "sk-ant-";
+      case API_PROVIDER.DeepSeek:
+        return "sk-ds-";
+    }
+  };
+
+  const getProviderName = () => {
+    switch (type) {
+      case API_PROVIDER.OpenAI:
+        return "OpenAI";
+      case API_PROVIDER.Anthropic:
+        return "Anthropic";
+      case API_PROVIDER.DeepSeek:
+        return "Deepseek";
     }
   };
 
@@ -90,30 +164,22 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         <div className="flex items-center min-w-[120px]">
           <img
             src={`${type}.png`}
-            alt={`${type === API_PROVIDER.OpenAI ? "GPT" : "Claude"} Logo`}
+            alt={`${getProviderName()} Logo`}
             className="h-6 w-6 mr-2"
           />
           <Label htmlFor="key" className="whitespace-nowrap">
-            {type === API_PROVIDER.OpenAI ? "OpenAI" : "Anthropic"}
+            {getProviderName()}
           </Label>
         </div>
         <div className="flex-1">
           <Input
             id="key"
             type="password"
-            placeholder={type === API_PROVIDER.OpenAI ? "sk-1234" : "sk-ant-"}
+            placeholder={getPlaceholder()}
             className="w-full"
-            value={
-              type === API_PROVIDER.OpenAI
-                ? openAiKey || ""
-                : anthropicKey || ""
-            }
+            value={getCurrentValue()}
             onChange={(e) => handleInputChange(e.target.value)}
-            disabled={
-              type === API_PROVIDER.OpenAI
-                ? !!apiKeys?.openai
-                : !!apiKeys?.anthropic
-            }
+            disabled={isDisabled()}
           />
           {error && (
             <p className="text-sm text-red-500 mt-1">Invalid API key</p>

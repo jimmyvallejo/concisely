@@ -19,12 +19,14 @@ export const ApiKeysProvider = ({ children }: { children: ReactNode }) => {
   const [apiKeys, setApiKeys] = useState<ApiKeys>({
     openai: null,
     anthropic: null,
+    deepseek: null
   });
 
   const fetchApiKeys = async () => {
     const openAiKey = await SecureKeyStorage.getApiKey("openai");
     const anthropicKey = await SecureKeyStorage.getApiKey("anthropic");
-    setApiKeys({ openai: openAiKey, anthropic: anthropicKey });
+    const deepseekKey = await SecureKeyStorage.getApiKey("deepseek");
+    setApiKeys({ openai: openAiKey, anthropic: anthropicKey, deepseek: deepseekKey });
   };
 
   useEffect(() => {

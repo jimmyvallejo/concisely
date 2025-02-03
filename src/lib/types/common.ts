@@ -1,6 +1,7 @@
 export type ApiKeys = {
     openai: string | null;
     anthropic: string | null;
+    deepseek: string | null;
   };
 
 
