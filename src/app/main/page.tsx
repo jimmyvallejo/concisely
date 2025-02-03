@@ -75,7 +75,7 @@ const Main = () => {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
+        setIsLoading(false);
         const chunk = decoder.decode(value);
         setStreamResponse((prev) => [...prev, chunk]);
       }
@@ -86,6 +86,7 @@ const Main = () => {
 
   const handleStreamError = (error: unknown): void => {
     console.error("Error:", error);
+    setIsLoading(false);
     setStreamResponse((prev) => [...prev, "Error: Stream failed"]);
   };
 
@@ -125,7 +126,6 @@ const Main = () => {
         } else {
           console.error("Failed to scrape:", response?.error);
         }
-        setIsLoading(false);
       });
     } catch (error) {
       console.error(error);
