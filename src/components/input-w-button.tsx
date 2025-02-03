@@ -5,8 +5,11 @@ import { ApiProvider } from "@/lib/types/common";
 import { useEffect, useState } from "react";
 import { SecureKeyStorage } from "@/lib/utils/encryption";
 import { useApiKeys } from "@/context/key-provider";
-import { useModel } from "@/context/model-provider";
-import { validateOpenAI, validateAnthropicKey, validateDeepseekKey } from "@/lib/api/validate-keys";
+import {
+  validateOpenAI,
+  validateAnthropicKey,
+  validateDeepseekKey,
+} from "@/lib/api/validate-keys";
 import { API_PROVIDER } from "@/lib/constants/constants";
 
 interface InputWithButtonProps {
@@ -17,8 +20,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
   const [openAiKey, setOpenAiKey] = useState<string>("");
   const [anthropicKey, setAnthropicKey] = useState<string>("");
   const [deepseekKey, setDeepseekKey] = useState<string>("");
-  const { apiKeys, fetchApiKeys } = useApiKeys();
-  const { handleInitialAndRemoval } = useModel();
+  const { apiKeys, fetchApiKeys, deleteApiKey } = useApiKeys();
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
 
       if (isRemove) {
         await SecureKeyStorage.removeApiKey(type);
-        handleInitialAndRemoval();
+
         switch (type) {
           case API_PROVIDER.OpenAI:
             setOpenAiKey("");
@@ -79,6 +81,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
             setDeepseekKey("");
             break;
         }
+        await deleteApiKey(type);
       } else {
         let key = "";
         let isValid = false;

@@ -14,14 +14,14 @@ import { useModel } from "@/context/model-provider";
 
 export const ProviderDropdown = () => {
   const { apiKeys } = useApiKeys();
-  const { currentModel, setCurrentModel } = useModel();
+  const { currentModel, handleSetModel } = useModel();
 
   const handleModelChange = (modelId: string) => {
     const selectedModel = Object.values(CHAT_MODELS).find(
       (model) => model.id === modelId
     );
     if (selectedModel) {
-      setCurrentModel(selectedModel);
+      handleSetModel(selectedModel)
       console.log(selectedModel)
     }
   };
@@ -29,7 +29,7 @@ export const ProviderDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">{currentModel?.displayName}</Button>
+        <Button variant="outline">{currentModel ? currentModel?.displayName : "Select a Model"}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuRadioGroup

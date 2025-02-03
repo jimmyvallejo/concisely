@@ -14,7 +14,7 @@ import { ChatModelConfig } from "@/lib/types/common";
 interface ModelContextType {
   currentModel: ChatModelConfig | undefined;
   setCurrentModel: Dispatch<SetStateAction<ChatModelConfig | undefined>>;
-  handleInitialAndRemoval: () => void;
+  handleSetModel: (model: ChatModelConfig) => Promise<void>;
 }
 
 const ModelContext = createContext<ModelContextType | undefined>(undefined);
@@ -25,19 +25,37 @@ export const ModelProvider = ({ children }: { children: ReactNode }) => {
     undefined
   );
 
-  const handleInitialAndRemoval = () => {
-    if (apiKeys && apiKeys.openai) {
-      setCurrentModel(CHAT_MODELS.GptMini);
-      return;
-    } else if (apiKeys && apiKeys.anthropic) {
-      setCurrentModel(CHAT_MODELS.Sonnet);
-    } else {
-      setCurrentModel(undefined);
+  const handleSetModel = async (model: ChatModelConfig | undefined) => {
+    try {
+      await chrome.storage.local.set({ current_model: model });
+      setCurrentModel(model);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleInit = async () => {
+    try {
+      const result = await chrome.storage.local.get("current_model");
+      if (result.current_model) {
+        setCurrentModel(result.current_model);
+      } else {
+        if (apiKeys?.openai) {
+          handleSetModel(CHAT_MODELS.GptMini);
+          return;
+        } else if (apiKeys?.anthropic) {
+          handleSetModel(CHAT_MODELS.Sonnet);
+        } else {
+          handleSetModel(undefined);
+        }
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
   useEffect(() => {
-    handleInitialAndRemoval();
+    handleInit();
   }, [apiKeys]);
 
   useEffect(() => {
@@ -46,7 +64,11 @@ export const ModelProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ModelContext.Provider
-      value={{ currentModel, setCurrentModel, handleInitialAndRemoval }}
+      value={{
+        currentModel,
+        setCurrentModel,
+        handleSetModel,
+      }}
     >
       {children}
     </ModelContext.Provider>
