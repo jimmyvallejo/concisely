@@ -156,7 +156,7 @@ const Main = () => {
           </div>
         )}
         {streamResponse.length > 0 && (
-          <div className="mt-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 overflow-auto">
+          <div className="mt-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">AI Summary</h2>
               <Button

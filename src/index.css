@@ -78,3 +78,20 @@
     padding: 1rem;
   }
 }
+
+::-webkit-scrollbar {
+  width: 6px; 
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;  
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4B5563;  /* darker gray thumb */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #374151;  /* even darker on hover */
+}
