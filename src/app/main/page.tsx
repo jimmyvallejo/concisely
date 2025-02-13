@@ -7,6 +7,9 @@ import { useModel } from "@/context/model-provider";
 import { API_PROVIDER, BASE_URL } from "@/lib/constants/constants";
 import ReactMarkdown from "react-markdown";
 import { CircleX } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
+import { Brain } from "lucide-react";
 
 interface ScrapedData {
   title: string;
@@ -19,11 +22,22 @@ interface ScrapedData {
   model: string | null;
 }
 
+interface SavedChat {
+  url: string;
+  title: string;
+  summary: string;
+  timestamp: number;
+}
+
 const Main = () => {
   const { apiKeys } = useApiKeys();
   const { currentModel } = useModel();
   const [streamResponse, setStreamResponse] = useState<string[]>([]);
+  const [currentUrl, setCurrentUrl] = useState<string>("");
+  const [currentTitle, setCurrentTitle] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const { toast } = useToast();
 
   const prepareRequestData = (data: ScrapedData): ScrapedData => {
     const enrichedData = { ...data };
@@ -113,6 +127,9 @@ const Main = () => {
 
       if (!tab?.id) return;
 
+      setCurrentUrl(tab.url || "");
+      setCurrentTitle(tab.title || "");
+
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         files: ["/content-script.js"],
@@ -131,6 +148,38 @@ const Main = () => {
     } catch (error) {
       console.error(error);
       setIsLoading(false);
+    }
+  };
+
+  const handleSaveChat = async () => {
+    const newChat: SavedChat = {
+      url: currentUrl,
+      title: currentTitle || currentUrl,
+      summary: streamResponse.join(""),
+      timestamp: Date.now(),
+    };
+
+    try {
+      const result = await chrome.storage.local.get("savedChats");
+      const savedChats: SavedChat[] = result.savedChats || [];
+
+      const updatedChats = [...savedChats, newChat];
+
+      await chrome.storage.local.set({ savedChats: updatedChats });
+
+      toast({
+        title: "Chat Saved",
+        description: "Your summary has been saved successfully.",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error saving chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save chat. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   };
 
@@ -170,24 +219,27 @@ const Main = () => {
             <div className="prose prose-sm lg:prose-base dark:prose-invert max-w-none">
               <ReactMarkdown>{streamResponse.join("")}</ReactMarkdown>
             </div>
-            <div
-              className={`
-        flex justify-center mt-4 
-        transition-opacity duration-1000 ease-in-out
-        ${streamResponse.length > 100 ? "opacity-100" : "opacity-0"}
-      `}
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              >
-                Scroll to Top
+            <div className="flex justify-center items-center gap-4 mt-4">
+              <Button size="sm" onClick={handleSaveChat}>
+                <Brain className="mr-1 h-4 w-4" />
+                Save Chat
               </Button>
+              {streamResponse.length > 100 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
+                >
+                  Scroll to Top
+                </Button>
+              )}
             </div>
           </div>
         )}
       </div>
+      <Toaster />
     </div>
   );
 };
