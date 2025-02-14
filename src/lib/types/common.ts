@@ -17,3 +17,10 @@ export type ChatModels = {
   Mini: ChatModelConfig;
   Sonnet: ChatModelConfig;
 };
+
+export interface SavedChat {
+  url: string;
+  title: string;
+  summary: string;
+  timestamp: number;
+}

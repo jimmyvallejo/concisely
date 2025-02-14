@@ -95,3 +95,13 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #374151;  /* even darker on hover */
 }
+
+.toaster {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+}

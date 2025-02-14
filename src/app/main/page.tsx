@@ -8,8 +8,9 @@ import { API_PROVIDER, BASE_URL } from "@/lib/constants/constants";
 import ReactMarkdown from "react-markdown";
 import { CircleX } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
 import { Brain } from "lucide-react";
+import { SavedChat } from "@/lib/types/common";
+import { SavedChatDrawer } from "@/components/saved-chat-drawer";
 
 interface ScrapedData {
   title: string;
@@ -22,13 +23,6 @@ interface ScrapedData {
   model: string | null;
 }
 
-interface SavedChat {
-  url: string;
-  title: string;
-  summary: string;
-  timestamp: number;
-}
-
 const Main = () => {
   const { apiKeys } = useApiKeys();
   const { currentModel } = useModel();
@@ -36,6 +30,7 @@ const Main = () => {
   const [currentUrl, setCurrentUrl] = useState<string>("");
   const [currentTitle, setCurrentTitle] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasStreamError, setHasStreamError] = useState(false);
 
   const { toast } = useToast();
 
@@ -94,6 +89,7 @@ const Main = () => {
         const chunk = decoder.decode(value);
         setStreamResponse((prev) => [...prev, chunk]);
       }
+      setHasStreamError(false);
     } finally {
       reader.releaseLock();
     }
@@ -102,11 +98,13 @@ const Main = () => {
   const handleStreamError = (error: unknown): void => {
     console.error("Error:", error);
     setIsLoading(false);
+    setHasStreamError(true);
     setStreamResponse((prev) => [...prev, "Error: Stream failed"]);
   };
 
   const handleStream = async (data: ScrapedData): Promise<void> => {
     setStreamResponse([]);
+    setHasStreamError(false);
 
     try {
       const enrichedData = prepareRequestData(data);
@@ -143,11 +141,13 @@ const Main = () => {
           handleStream(response.data);
         } else {
           console.error("Failed to scrape:", response?.error);
+          setHasStreamError(true);
         }
       });
     } catch (error) {
       console.error(error);
       setIsLoading(false);
+      setHasStreamError(true);
     }
   };
 
@@ -184,62 +184,71 @@ const Main = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl flex flex-col items-center">
-        <h1 className="text-2xl font-bold mb-4">One Click Summary</h1>
+    <div className="min-h-screen relative">
+      <div className="w-full flex items-center justify-center p-4 pb-20">
+        <div className="w-full max-w-2xl flex flex-col items-center">
+          <h1 className="text-2xl font-bold mb-4">One Click Summary</h1>
 
-        {apiKeys.openai || apiKeys.anthropic ? (
-          <div className="flex gap-2 flex-col">
-            <Button
-              onClick={handleScrape}
-              disabled={isLoading}
-              className="w-48"
-            >
-              {isLoading ? "Summarizing..." : "Summarize Tab"}
-            </Button>
-            <ProviderDropdown />
-          </div>
-        ) : (
-          <div className="flex gap-4">
-            <APIDrawer />
-          </div>
-        )}
-        {streamResponse.length > 0 && (
-          <div className="mt-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">AI Summary</h2>
+          {apiKeys.openai || apiKeys.anthropic ? (
+            <div className="flex gap-2 flex-col">
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setStreamResponse([])}
+                onClick={handleScrape}
+                disabled={isLoading}
+                className="w-48"
               >
-                <CircleX />
+                {isLoading ? "Summarizing..." : "Summarize Tab"}
               </Button>
+              <ProviderDropdown />
             </div>
-            <div className="prose prose-sm lg:prose-base dark:prose-invert max-w-none">
-              <ReactMarkdown>{streamResponse.join("")}</ReactMarkdown>
+          ) : (
+            <div className="flex gap-4">
+              <APIDrawer />
             </div>
-            <div className="flex justify-center items-center gap-4 mt-4">
-              <Button size="sm" onClick={handleSaveChat}>
-                <Brain className="mr-1 h-4 w-4" />
-                Save Chat
-              </Button>
-              {streamResponse.length > 100 && (
+          )}
+          {streamResponse.length > 0 && (
+            <div className="mt-6 w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-12">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">AI Summary</h2>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() =>
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }
+                  onClick={() => {
+                    setStreamResponse([]);
+                    setHasStreamError(false);
+                  }}
                 >
-                  Scroll to Top
+                  <CircleX />
                 </Button>
-              )}
+              </div>
+              <div className="prose prose-sm lg:prose-base dark:prose-invert max-w-none">
+                <ReactMarkdown>{streamResponse.join("")}</ReactMarkdown>
+              </div>
+              <div className="flex justify-center items-center gap-4 mt-4">
+                {!hasStreamError && (
+                  <Button size="sm" onClick={handleSaveChat}>
+                    <Brain className="mr-1 h-4 w-4" />
+                    Save Summary
+                  </Button>
+                )}
+                {streamResponse.length > 100 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
+                  >
+                    Scroll to Top
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-      <Toaster />
+      <div className="fixed bottom-0 left-0 right-0 p-4 flex justify-center bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <SavedChatDrawer />
+      </div>
     </div>
   );
 };
