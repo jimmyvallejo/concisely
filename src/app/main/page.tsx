@@ -184,7 +184,7 @@ const Main = () => {
   };
 
   return (
-    <div className="min-h-screen relative">
+    <div>
       <div className="w-full flex items-center justify-center p-4 pb-20">
         <div className="w-full max-w-2xl flex flex-col items-center">
           <h1 className="text-2xl font-bold mb-4">One Click Summary</h1>
