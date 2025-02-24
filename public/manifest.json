@@ -2,7 +2,10 @@
     "manifest_version": 3,
     "name": "Concisely",
     "icons": {
-        "32": "c-small.png"
+        "16": "c-xsmall.png",
+        "32": "c-small.png",
+        "48": "c-med.png",
+        "128": "c-large.png"
     },
     "background": {
         "service_worker": "service-worker.js",
