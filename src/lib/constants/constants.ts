@@ -24,8 +24,8 @@ export const API_PROVIDER = {
       provider: API_PROVIDER.OpenAI
     },
     Sonnet: {
-      id: "claude-3.5-sonnet",
-      displayName: "Claude 3.5 Sonnet", 
+      id: "claude-3.7-sonnet",
+      displayName: "Claude 3.7 Sonnet", 
       provider: API_PROVIDER.Anthropic
     },
     Opus: {
