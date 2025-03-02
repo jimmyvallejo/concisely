@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Concisely",
+    "name": "Concisely - One click summarize any webpage/PDF",
     "icons": {
         "16": "c-xsmall.png",
         "32": "c-small.png",
@@ -11,17 +11,25 @@
         "service_worker": "service-worker.js",
         "type": "module"
     },
-    "version": "1.0.1",
+    "version": "1.0.2",
     "action": {
         "default_popup": "index.html"
     },
     "permissions": ["scripting", "tabs", "activeTab", "storage"],
     "host_permissions": [
        "http://*/*",
-       "https://*/*" 
+       "https://*/*",
+       "file://*/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content-script.js"],
+            "run_at": "document_idle"
+        }
     ],
     "web_accessible_resources": [{
-      "resources": ["*.css", "*.js", "*.png"],
+      "resources": ["*.css", "*.js", "*.png", "*.mjs", "*.map", "cmaps/*"],
       "matches": ["<all_urls>"]
     }]
 }

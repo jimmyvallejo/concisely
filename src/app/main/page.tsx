@@ -21,6 +21,7 @@ interface ScrapedData {
   mainContent: string | null;
   apiKey: string | null;
   model: string | null;
+  type: string | null;
 }
 
 const Main = () => {
@@ -137,6 +138,11 @@ const Main = () => {
 
       chrome.tabs.sendMessage(tab.id, { action: "scrapeText" }, (response) => {
         if (response && response.success) {
+          if (response.type === "web") {
+            response.data.type = "web";
+          } else {
+            response.data.type = "pdf";
+          }
           console.log("Data", response.data);
           handleStream(response.data);
         } else {
@@ -168,7 +174,7 @@ const Main = () => {
       await chrome.storage.local.set({ savedChats: updatedChats });
 
       toast({
-        title: "Chat Saved",
+        title: "Summary Saved",
         description: "Your summary has been saved successfully.",
         duration: 3000,
       });

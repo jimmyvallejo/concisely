@@ -92,7 +92,7 @@ export const SavedChatDrawer = () => {
         <div className="flex items-center justify-center">
           <DrawerHeader>
             <div className="flex flex-col justify-center items-center space-y-3">
-              <DrawerTitle>Saved Chats:</DrawerTitle>
+              <DrawerTitle>Saved Summaries:</DrawerTitle>
               <DrawerDescription>
                 A collection of your saved topics and summaries.
               </DrawerDescription>

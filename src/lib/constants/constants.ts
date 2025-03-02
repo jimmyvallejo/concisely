@@ -1,5 +1,6 @@
-export const BASE_URL = process.env.TEST ? "http://localhost:8080" : "https://concisely-server.fly.dev"
+// export const BASE_URL = process.env.TEST ? "http://localhost:8080" : "https://concisely-server.fly.dev"
 
+export const BASE_URL = "http://localhost:8080" 
 
 export const API_PROVIDER = {
     OpenAI: 'openai',
