@@ -16,3 +16,19 @@ export const getSavedChats = async (): Promise<SavedChat[]> => {
     return [];
   }
 };
+
+
+export const isWebPdfUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  
+  const isPdf = url.toLowerCase().endsWith('.pdf');
+  
+  const isWebUrl = url.startsWith('http://') || url.startsWith('https://');
+  
+  const isPdfViewer = 
+    (url.includes('viewer.html') && url.includes('pdf=')) ||
+    url.includes('pdfjs/web/viewer.html') ||
+    (url.includes('drive.google.com') && url.includes('viewerng/viewer'));
+  
+  return isWebUrl && (isPdf || isPdfViewer);
+};

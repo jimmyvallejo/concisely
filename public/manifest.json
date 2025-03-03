@@ -29,7 +29,19 @@
         }
     ],
     "web_accessible_resources": [{
-      "resources": ["*.css", "*.js", "*.png", "*.mjs", "*.map", "cmaps/*"],
+      "resources": [
+        "*.css", 
+        "*.js", 
+        "*.png", 
+        "*.mjs", 
+        "*.map", 
+        "cmaps/*", 
+        "pdf.min.mjs", 
+        "pdf.worker.min.mjs"
+      ],
       "matches": ["<all_urls>"]
-    }]
+    }],
+    "content_security_policy": {
+      "extension_pages": "script-src 'self'; object-src 'self'"
+    }
 }

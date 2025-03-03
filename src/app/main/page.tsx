@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Brain } from "lucide-react";
 import { SavedChat } from "@/lib/types/common";
 import { SavedChatDrawer } from "@/components/saved-chat-drawer";
+import { isWebPdfUrl } from "@/lib/utils/utils";
 
 interface ScrapedData {
   title: string;
@@ -22,6 +23,15 @@ interface ScrapedData {
   apiKey: string | null;
   model: string | null;
   type: string | null;
+  url: string | null;
+}
+
+interface extractedPDF {
+  content: string;
+  title: string;
+  url: string;
+  apiKey: string | null;
+  model: string | null;
 }
 
 const Main = () => {
@@ -35,7 +45,9 @@ const Main = () => {
 
   const { toast } = useToast();
 
-  const prepareRequestData = (data: ScrapedData): ScrapedData => {
+  const prepareRequestData = (
+    data: ScrapedData | extractedPDF
+  ): ScrapedData | extractedPDF => {
     const enrichedData = { ...data };
 
     if (apiKeys.openai && currentModel?.provider === API_PROVIDER.OpenAI) {
@@ -53,7 +65,9 @@ const Main = () => {
     return enrichedData;
   };
 
-  const fetchStream = async (data: ScrapedData): Promise<Response> => {
+  const fetchStream = async (
+    data: ScrapedData | extractedPDF
+  ): Promise<Response> => {
     const endpoint =
       currentModel?.provider === "openai"
         ? `${BASE_URL}/gpt-stream`
@@ -103,9 +117,12 @@ const Main = () => {
     setStreamResponse((prev) => [...prev, "Error: Stream failed"]);
   };
 
-  const handleStream = async (data: ScrapedData): Promise<void> => {
+  const handleStream = async (
+    data: ScrapedData | extractedPDF
+  ): Promise<void> => {
     setStreamResponse([]);
     setHasStreamError(false);
+    console.log("Data:", data);
 
     try {
       const enrichedData = prepareRequestData(data);
@@ -123,7 +140,7 @@ const Main = () => {
         active: true,
         currentWindow: true,
       });
-
+      console.log(tab);
       if (!tab?.id) return;
 
       setCurrentUrl(tab.url || "");
@@ -136,20 +153,26 @@ const Main = () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      chrome.tabs.sendMessage(tab.id, { action: "scrapeText" }, (response) => {
-        if (response && response.success) {
-          if (response.type === "web") {
-            response.data.type = "web";
+      const isPDF = isWebPdfUrl(tab.url);
+
+      chrome.tabs.sendMessage(
+        tab.id,
+        { action: "scrapeText", isPDF: isPDF, url: tab.url },
+        (response) => {
+          if (response && response.success) {
+            if (isPDF) {
+              response.data.type = "pdf";
+            } else {
+              response.data.type = "web";
+            }
+            console.log(response);
+            handleStream(response.data);
           } else {
-            response.data.type = "pdf";
+            console.error("Failed to scrape:", response?.error);
+            setHasStreamError(true);
           }
-          console.log("Data", response.data);
-          handleStream(response.data);
-        } else {
-          console.error("Failed to scrape:", response?.error);
-          setHasStreamError(true);
         }
-      });
+      );
     } catch (error) {
       console.error(error);
       setIsLoading(false);
