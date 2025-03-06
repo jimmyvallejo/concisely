@@ -34,10 +34,7 @@
         "*.js", 
         "*.png", 
         "*.mjs", 
-        "*.map", 
-        "cmaps/*", 
-        "pdf.min.mjs", 
-        "pdf.worker.min.mjs"
+        "*.map"
       ],
       "matches": ["<all_urls>"]
     }],
