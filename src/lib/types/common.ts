@@ -2,10 +2,11 @@ export type ApiKeys = {
     openai: string | null;
     anthropic: string | null;
     deepseek: string | null;
+    gemini: string | null
   };
 
 
-export type ApiProvider = 'openai' | 'anthropic' | 'deepseek';
+export type ApiProvider = 'openai' | 'anthropic' | 'deepseek' | 'gemini';
 
 export type ChatModelConfig = {
   id: string;

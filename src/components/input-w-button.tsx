@@ -6,9 +6,10 @@ import { useEffect, useState } from "react";
 import { SecureKeyStorage } from "@/lib/utils/encryption";
 import { useApiKeys } from "@/context/key-provider";
 import {
-  validateOpenAI,
+  validateOpenAIKey,
   validateAnthropicKey,
   validateDeepseekKey,
+  validateGeminiKey
 } from "@/lib/api/validate-keys";
 import { API_PROVIDER } from "@/lib/constants/constants";
 
@@ -20,6 +21,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
   const [openAiKey, setOpenAiKey] = useState<string>("");
   const [anthropicKey, setAnthropicKey] = useState<string>("");
   const [deepseekKey, setDeepseekKey] = useState<string>("");
+  const [geminiKey, setGeminiKey] = useState<string>("");
   const { apiKeys, fetchApiKeys, deleteApiKey } = useApiKeys();
   const [error, setError] = useState<string>("");
 
@@ -31,6 +33,8 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         setAnthropicKey(apiKeys.anthropic);
       } else if (type === API_PROVIDER.DeepSeek && apiKeys.deepseek) {
         setDeepseekKey(apiKeys.deepseek);
+      } else if (type === API_PROVIDER.Gemini && apiKeys.gemini) {
+        setGeminiKey(apiKeys.gemini);
       }
     }
   }, [apiKeys, type]);
@@ -43,6 +47,8 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         return apiKeys?.anthropic ? "Remove" : "Add";
       case API_PROVIDER.DeepSeek:
         return apiKeys?.deepseek ? "Remove" : "Add";
+      case API_PROVIDER.Gemini:
+        return apiKeys?.gemini ? "Remove" : "Add";
       default:
         return "Add";
     }
@@ -59,6 +65,9 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         break;
       case API_PROVIDER.DeepSeek:
         setDeepseekKey(value);
+        break;
+      case API_PROVIDER.Gemini:
+        setGeminiKey(value);
         break;
     }
   };
@@ -80,6 +89,9 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
           case API_PROVIDER.DeepSeek:
             setDeepseekKey("");
             break;
+          case API_PROVIDER.Gemini:
+            setGeminiKey("");
+            break;
         }
         await deleteApiKey(type);
       } else {
@@ -89,7 +101,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         switch (type) {
           case API_PROVIDER.OpenAI:
             key = openAiKey;
-            isValid = await validateOpenAI(key);
+            isValid = await validateOpenAIKey(key);
             break;
           case API_PROVIDER.Anthropic:
             key = anthropicKey;
@@ -98,6 +110,10 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
           case API_PROVIDER.DeepSeek:
             key = deepseekKey;
             isValid = await validateDeepseekKey(key);
+            break;
+          case API_PROVIDER.Gemini:
+            key = geminiKey;
+            isValid = await validateGeminiKey(key);
             break;
         }
 
@@ -125,6 +141,8 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         return anthropicKey || "";
       case API_PROVIDER.DeepSeek:
         return deepseekKey || "";
+      case API_PROVIDER.Gemini:
+        return geminiKey || "";
     }
   };
 
@@ -136,6 +154,8 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         return !!apiKeys?.anthropic;
       case API_PROVIDER.DeepSeek:
         return !!apiKeys?.deepseek;
+      case API_PROVIDER.Gemini:
+        return !!apiKeys?.gemini;
     }
   };
 
@@ -147,6 +167,8 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         return "sk-ant-";
       case API_PROVIDER.DeepSeek:
         return "sk-ds-";
+      case API_PROVIDER.Gemini:
+        return "AI-";
     }
   };
 
@@ -158,6 +180,8 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         return "Anthropic";
       case API_PROVIDER.DeepSeek:
         return "Deepseek";
+      case API_PROVIDER.Gemini:
+        return "Gemini";
     }
   };
 

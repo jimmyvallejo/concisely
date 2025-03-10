@@ -5,7 +5,8 @@ export const BASE_URL = "http://localhost:8080"
 export const API_PROVIDER = {
     OpenAI: 'openai',
     Anthropic: 'anthropic',
-    DeepSeek: 'deepseek'
+    DeepSeek: 'deepseek',
+    Gemini: "gemini"
   } as const;
 
   export const CHAT_MODELS = {

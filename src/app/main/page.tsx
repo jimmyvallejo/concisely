@@ -133,6 +133,42 @@ const Main = () => {
     }
   };
 
+  const handlePdfExtraction = async (
+    url: string | undefined
+  ): Promise<void> => {
+    setStreamResponse([]);
+    setHasStreamError(false);
+    try {
+      const request = {
+        url: url,
+      };
+
+      const response = await fetch(`${BASE_URL}/extract-pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const contentLines = data.content
+        .split("\n")
+        .filter((line: string) => line.trim() !== "");
+
+      setStreamResponse(contentLines);
+    } catch (error) {
+      setHasStreamError(true);
+      console.error("PDF extraction error:", error);
+      setIsLoading(false);
+    }
+  };
+
   const handleScrape = async (): Promise<void> => {
     try {
       setIsLoading(true);
@@ -155,28 +191,26 @@ const Main = () => {
 
       const isPDF = isWebPdfUrl(tab.url);
 
-      chrome.tabs.sendMessage(
-        tab.id,
-        { action: "scrapeText", isPDF: isPDF, url: tab.url },
-        (response) => {
-          if (response && response.success) {
-            if (isPDF) {
-              response.data.type = "pdf";
-            } else {
-              response.data.type = "web";
-            }
-            console.log(response);
-            handleStream(response.data);
+      chrome.tabs.sendMessage(tab.id, { action: "scrapeText" }, (response) => {
+        if (response && response.success) {
+          console.log(response);
+          if (isPDF) {
+            response.data.type = "pdf";
+            handlePdfExtraction(tab.url);
           } else {
-            console.error("Failed to scrape:", response?.error);
-            setHasStreamError(true);
+            response.data.type = "web";
+            handleStream(response.data);
           }
+        } else {
+          console.error("Failed to scrape:", response?.error);
+          setHasStreamError(true);
         }
-      );
+      });
     } catch (error) {
       console.error(error);
-      setIsLoading(false);
       setHasStreamError(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 

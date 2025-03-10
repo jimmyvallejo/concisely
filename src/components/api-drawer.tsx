@@ -45,6 +45,7 @@ export const APIDrawer = ({ isNav = false }: APIDrawerProps) => {
           <DrawerFooter>
             <InputWithButton type={API_PROVIDER.OpenAI} />
             <InputWithButton type={API_PROVIDER.Anthropic} />
+            <InputWithButton type={API_PROVIDER.Gemini} />
             {/* <InputWithButton type={API_PROVIDER.DeepSeek} /> */}
             <DrawerClose asChild>
               <div className="flex items-center justify-center mt-3">

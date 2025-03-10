@@ -28,7 +28,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("Message received in content script:", request);
 
   if (request.action === "scrapeText") {
-    if (!request.isPDF) {
       (async () => {
         try {
           const data = await scrapePageText();
@@ -42,45 +41,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           });
         }
       })();
-    } else if (request.isPDF) {
-      (async () => {
-        try {
-          const endpoint = "http://localhost:8080/extract-pdf";
-          
-          const requestData = {
-            url: request.url,
-          };
-          
-          const response = await fetch(endpoint, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestData),
-          });
-          
-          if (!response.ok) {
-            throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-          }
-          
-          const data = await response.json();
-          sendResponse({ success: true, data });
-        } catch (error) {
-          console.error("PDF Scraping error:", error);
-          sendResponse({
-            success: false,
-            error: error.message || "Failed to scrape PDF",
-          });
-        }
-      })();
-    } else {
-      sendResponse({
-        success: false,
-        error: "Unsupported content type",
-        details: { detectedType: request.contentType }, 
-      });
-    }
-
     return true; 
   }
 

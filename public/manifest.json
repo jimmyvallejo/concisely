@@ -1,6 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Concisely - One click summarize any webpage/PDF",
+    "description": "One click summarize any webpage or PDF with AI. ",
     "icons": {
         "16": "c-xsmall.png",
         "32": "c-small.png",
