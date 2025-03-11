@@ -21,19 +21,19 @@ export const ApiKeysProvider = ({ children }: { children: ReactNode }) => {
     openai: null,
     anthropic: null,
     deepseek: null,
-    gemini: null
+    gemini: null,
   });
 
   const fetchApiKeys = async () => {
     const openAiKey = await SecureKeyStorage.getApiKey("openai");
     const anthropicKey = await SecureKeyStorage.getApiKey("anthropic");
     const deepseekKey = await SecureKeyStorage.getApiKey("deepseek");
-    const geminiKey = await SecureKeyStorage.getApiKey("deepseek");
+    const geminiKey = await SecureKeyStorage.getApiKey("gemini");
     setApiKeys({
       openai: openAiKey,
       anthropic: anthropicKey,
       deepseek: deepseekKey,
-      gemini: geminiKey
+      gemini: geminiKey,
     });
   };
 

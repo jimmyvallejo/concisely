@@ -17,6 +17,17 @@ export const getSavedChats = async (): Promise<SavedChat[]> => {
   }
 };
 
+export const getIsWebPDF = async (): Promise<boolean> => {
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+  if (!tab?.url){
+    return false
+  }
+  return isWebPdfUrl(tab.url)
+}
+
 
 export const isWebPdfUrl = (url: string | undefined): boolean => {
   if (!url) return false;

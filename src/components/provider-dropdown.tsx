@@ -29,7 +29,7 @@ export const ProviderDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">{currentModel ? currentModel?.displayName : "Select a Model"}</Button>
+        <Button className="w-full" variant="outline">{currentModel ? currentModel?.displayName : "Select a Model"}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuRadioGroup

@@ -9,7 +9,7 @@ import {
   validateOpenAIKey,
   validateAnthropicKey,
   validateDeepseekKey,
-  validateGeminiKey
+  validateGeminiKey,
 } from "@/lib/api/validate-keys";
 import { API_PROVIDER } from "@/lib/constants/constants";
 
@@ -56,6 +56,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
 
   const handleInputChange = (value: string) => {
     setError("");
+    console.log("input Value:", value);
     switch (type) {
       case API_PROVIDER.OpenAI:
         setOpenAiKey(value);
@@ -120,6 +121,7 @@ export const InputWithButton = ({ type }: InputWithButtonProps) => {
         if (!key) return;
 
         if (isValid) {
+          console.log("Key:", key);
           await SecureKeyStorage.saveApiKey(type, key);
         } else {
           setError("Invalid API key");

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { APIDrawer } from "@/components/api-drawer";
 import { ProviderDropdown } from "@/components/provider-dropdown";
@@ -8,10 +8,16 @@ import { API_PROVIDER, BASE_URL } from "@/lib/constants/constants";
 import ReactMarkdown from "react-markdown";
 import { CircleX } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Brain } from "lucide-react";
+import { Brain, InfoIcon } from "lucide-react";
 import { SavedChat } from "@/lib/types/common";
 import { SavedChatDrawer } from "@/components/saved-chat-drawer";
-import { isWebPdfUrl } from "@/lib/utils/utils";
+import { isWebPdfUrl, getIsWebPDF } from "@/lib/utils/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ScrapedData {
   title: string;
@@ -42,6 +48,7 @@ const Main = () => {
   const [currentTitle, setCurrentTitle] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasStreamError, setHasStreamError] = useState(false);
+  const [isPDF, setPDF] = useState(false);
 
   const { toast } = useToast();
 
@@ -133,50 +140,51 @@ const Main = () => {
     }
   };
 
-  const handlePdfExtraction = async (
-    url: string | undefined
-  ): Promise<void> => {
+  const handlePDF = async (tab: string | undefined): Promise<void> => {
     setStreamResponse([]);
     setHasStreamError(false);
+
     try {
-      const request = {
-        url: url,
-      };
-
-      const response = await fetch(`${BASE_URL}/extract-pdf`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      const contentLines = data.content
-        .split("\n")
-        .filter((line: string) => line.trim() !== "");
-
-      setStreamResponse(contentLines);
+      const response = await handlePDFExtraction(tab);
+      await processStreamResponse(response);
     } catch (error) {
-      setHasStreamError(true);
-      console.error("PDF extraction error:", error);
-      setIsLoading(false);
+      handleStreamError(error);
     }
   };
 
-  const handleScrape = async (): Promise<void> => {
+  const handlePDFExtraction = async (
+    url: string | undefined
+  ): Promise<Response> => {
+    setStreamResponse([]);
+    setHasStreamError(false);
+
+    const request = {
+      url: url,
+      apiKey: apiKeys.gemini,
+    };
+    console.log("PDF extraction request:", { url, apiKey: !!apiKeys.gemini });
+    const response = await fetch(`${BASE_URL}/extract-pdf`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return response;
+  };
+
+  const handleWebOrPDF = async (): Promise<void> => {
     try {
       setIsLoading(true);
       const [tab] = await chrome.tabs.query({
         active: true,
         currentWindow: true,
       });
-      console.log(tab);
       if (!tab?.id) return;
 
       setCurrentUrl(tab.url || "");
@@ -196,7 +204,7 @@ const Main = () => {
           console.log(response);
           if (isPDF) {
             response.data.type = "pdf";
-            handlePdfExtraction(tab.url);
+            handlePDF(tab.url);
           } else {
             response.data.type = "web";
             handleStream(response.data);
@@ -246,26 +254,63 @@ const Main = () => {
     }
   };
 
+  useEffect(() => {
+    async function checkWebPDF() {
+      const result = await getIsWebPDF();
+      setPDF(result);
+    }
+    checkWebPDF();
+  }, []);
+
   return (
     <div>
       <div className="w-full flex items-center justify-center p-4 pb-20">
         <div className="w-full max-w-2xl flex flex-col items-center">
           <h1 className="text-2xl font-bold mb-4">One Click Summary</h1>
-
-          {apiKeys.openai || apiKeys.anthropic ? (
+          {isPDF ? (
             <div className="flex gap-2 flex-col">
-              <Button
-                onClick={handleScrape}
-                disabled={isLoading}
-                className="w-48"
-              >
-                {isLoading ? "Summarizing..." : "Summarize Tab"}
-              </Button>
-              <ProviderDropdown />
+              <div className="flex items-center">
+                <div className="w-48 ml-6">
+                  <Button
+                    onClick={handleWebOrPDF}
+                    disabled={isLoading || !apiKeys.gemini}
+                    className="w-full"
+                  >
+                    {isLoading ? "Summarizing..." : "Summarize PDF"}
+                  </Button>
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <InfoIcon className="h-4 w-4 ml-2 text-gray-500 cursor-pointer" />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="center" sideOffset={5}>
+                      <p>Gemini API key required for PDF summarization</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             </div>
           ) : (
-            <div className="flex gap-4">
-              <APIDrawer />
+            <div className="flex gap-2 flex-col items-center">
+              {apiKeys.openai || apiKeys.anthropic ? (
+                <>
+                  <Button
+                    onClick={handleWebOrPDF}
+                    disabled={isLoading}
+                    className="w-48"
+                  >
+                    {isLoading ? "Summarizing..." : "Summarize Content"}
+                  </Button>
+                  <div className="w-48">
+                    <ProviderDropdown />
+                  </div>
+                </>
+              ) : (
+                <div className="flex gap-4">
+                  <APIDrawer />
+                </div>
+              )}
             </div>
           )}
           {streamResponse.length > 0 && (
